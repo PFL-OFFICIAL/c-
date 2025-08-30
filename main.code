@@ -1,0 +1,436 @@
+import React, { useMemo, useState } from "react";
+
+// Brainy Bytes — C# Course SPA (single-file)
+// Drop this file into a Vite/Next/CRA project, or use it as the only page in a static React setup.
+// Styling assumes Tailwind CSS is available (as in the ChatGPT canvas preview). For a plain HTML export,
+// you can swap classNames for your own CSS.
+
+// ------------------------------
+// Course Data
+// ------------------------------
+const course = {
+  title: "Brainy Bytes: Learn C# from Zero to Hero",
+  tagline: "A free, full C# course with notes, code, mini-projects, and quizzes.",
+  version: "1.0.0",
+  modules: [
+    {
+      id: "intro",
+      title: "Welcome & Setup",
+      lessons: [
+        {
+          id: "what-is-cs",
+          title: "What is C# and .NET?",
+          body: `C# (pronounced \"see-sharp\") is a modern, object-oriented programming language created by Microsoft. It runs on the .NET platform. \n\n**Why C#?**\n- Strong typing + great tooling\n- Cross-platform via .NET (Windows, macOS, Linux)\n- Excellent for desktop, web, cloud, games (Unity), and mobile (MAUI).`,
+          code: `// Hello from C#\nusing System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello, Brainy Bytes!");\n    }\n}`,
+        },
+        {
+          id: "install-dotnet",
+          title: "Install .NET SDK",
+          body: `Install the **.NET SDK** from dotnet.microsoft.com. After installation, verify in your terminal:\n\n\n\n1. Open a terminal\n2. Run: \n\n\n\n\`dotnet --version\`\n\nYou should see a version number.`,
+          code: `# Terminal\n# Create a new console app\ndotnet new console -n HelloCSharp\ncd HelloCSharp\n# Run it\ndotnet run`,
+        },
+        {
+          id: "project-structure",
+          title: "Project Structure",
+          body: `A typical console project has: \n\n- *.csproj*: project metadata and dependencies\n- *Program.cs*: your entry point\n- *obj/bin*: build artifacts\n\nWe'll build multiple small apps as you progress.`,
+        },
+      ],
+    },
+    {
+      id: "basics",
+      title: "C# Basics",
+      lessons: [
+        {
+          id: "syntax",
+          title: "Syntax, Variables & Types",
+          body: `C# is **statically typed**. You declare types explicitly or use *var* for local type inference. Common types: \n\n- \`int\`, \`double\`, \`decimal\`\n- \`bool\`\n- \`string\`\n- \`char\`\n- \`DateTime\`\n\n**Strings** are immutable; use interpolation like \`$"Hi {name}"\`.`,
+          code: `int age = 13;\nvar pi = 3.14159; // inferred double\nbool isNerd = true;\nstring name = "Hiku";\nConsole.WriteLine($"{name} is {age} and nerd flag is {isNerd}");`,
+          quiz: {
+            question: "What does 'var' do in C#?",
+            choices: [
+              "Declares a dynamic type that changes at runtime",
+              "Infers the compile-time type from the right-hand side",
+              "Declares a variant record",
+              "Is identical to JavaScript 'var'",
+            ],
+            answerIndex: 1,
+            explanation: "In C#, 'var' infers a static, compile-time type from the initializer. It is not dynamic and not like JS var.",
+          },
+        },
+        {
+          id: "operators",
+          title: "Operators & Input/Output",
+          body: `Use \`Console.ReadLine()\` to read input and \`Console.WriteLine\` to print. Operators include arithmetic (+, -, *, /, %), comparison (==, !=, >, <, >=, <=), logical (&&, ||, !).`,
+          code: `Console.Write("Enter your name: ");\nstring? input = Console.ReadLine();\nConsole.WriteLine($"Hello {input}");`,
+        },
+        {
+          id: "control-flow",
+          title: "Control Flow",
+          body: `C# supports \`if/else\`, \`switch\` (including **pattern matching**), and loops (\`for\`, \`while\`, \`foreach\`).`,
+          code: `int n = 7;\nif (n % 2 == 0) Console.WriteLine("even");\nelse Console.WriteLine("odd");\n\nswitch (n) {\n  case < 0: Console.WriteLine("negative"); break;\n  case 0: Console.WriteLine("zero"); break;\n  case > 0: Console.WriteLine("positive"); break;\n}`,
+        },
+      ],
+      project: {
+        title: "Mini‑Project: Number Guesser",
+        brief: `Build a console game that picks a random number 1–100 and lets the user guess with hints.`,
+        code: `using System;\n\nvar rand = new Random();\nint secret = rand.Next(1, 101);\nint tries = 0;\nConsole.WriteLine("Guess 1-100");\nwhile (true) {\n  Console.Write("Your guess: ");\n  if (!int.TryParse(Console.ReadLine(), out var g)) {\n    Console.WriteLine("Enter a number!");\n    continue;\n  }\n  tries++;\n  if (g == secret) {\n    Console.WriteLine($"Correct in {tries} tries!");\n    break;\n  }\n  Console.WriteLine(g < secret ? "Too low" : "Too high");\n}`,
+      },
+    },
+    {
+      id: "oop",
+      title: "Methods, Classes & OOP",
+      lessons: [
+        {
+          id: "methods",
+          title: "Methods & Parameters",
+          body: `Methods can be \`static\` or instance members. C# supports default parameters, params arrays, and out parameters.`,
+          code: `static int Add(int a, int b = 0) => a + b;\nConsole.WriteLine(Add(2)); // 2\nConsole.WriteLine(Add(2,3)); // 5`,
+        },
+        {
+          id: "classes",
+          title: "Classes & Objects",
+          body: `Classes encapsulate state + behavior. Use properties to expose state safely.`,
+          code: `class Player {\n  public string Name { get; set; }\n  public int Score { get; private set; }\n  public void AddScore(int s) => Score += s;\n}\nvar p = new Player { Name = "Alex" };\np.AddScore(10);\nConsole.WriteLine(p.Score);`,
+        },
+        {
+          id: "inheritance",
+          title: "Inheritance, Interfaces, Polymorphism",
+          body: `C# supports single inheritance via classes and multiple via interfaces. Override virtual members; use interfaces for contracts.`,
+          code: `interface IDrawable { void Draw(); }\nclass Shape : IDrawable { public virtual void Draw() => Console.WriteLine("shape"); }\nclass Circle : Shape { public override void Draw() => Console.WriteLine("circle"); }\nIDrawable d = new Circle(); d.Draw();`,
+        },
+      ],
+      project: {
+        title: "Mini‑Project: To‑Do OOP",
+        brief: `Create a simple To‑Do manager with classes, interfaces, and in‑memory storage.",
+        code: `using System; using System.Collections.Generic;\n\ninterface ITaskStore { void Add(TaskItem t); IEnumerable<TaskItem> All(); }\nclass TaskItem { public string Title {get;set;} = ""; public bool Done {get; private set;} public void Complete()=>Done=true; }\nclass MemoryStore : ITaskStore { private readonly List<TaskItem> _items=new(); public void Add(TaskItem t)=>_items.Add(t); public IEnumerable<TaskItem> All()=>_items; }\n\nvar store=new MemoryStore();\nstore.Add(new TaskItem{Title="Learn classes"});\nstore.Add(new TaskItem{Title="Implement interface"});\nforeach(var t in store.All()) Console.WriteLine($"[ {(t.Done?"x":" ")} ] {t.Title}");`,
+      },
+    },
+    {
+      id: "collections",
+      title: "Collections, LINQ & Files",
+      lessons: [
+        {
+          id: "collections1",
+          title: "Lists, Dictionaries, and Sets",
+          body: `Use \`List<T>\`, \`Dictionary<TKey,TValue>\`, and \`HashSet<T>\` for core data work.`,
+          code: `var list = new List<int>{1,2,3};\nvar dict = new Dictionary<string,int>{{"a",1}};\nvar set = new HashSet<int>{1,1,2}; // {1,2}`,
+        },
+        {
+          id: "linq",
+          title: "Intro to LINQ",
+          body: `LINQ offers declarative querying over collections.`,
+          code: `var nums = new[]{1,2,3,4,5,6};\nvar evens = nums.Where(n => n % 2 == 0).Select(n => n*n);\nforeach (var e in evens) Console.WriteLine(e);`,
+        },
+        {
+          id: "files",
+          title: "Files & Paths",
+          body: `Use \`File\`, \`Directory\`, \`Path\`. Remember to dispose streams or use *using* statements.`,
+          code: `var path = Path.Combine(Environment.CurrentDirectory, "data.txt");\nFile.WriteAllText(path, "Brainy Bytes rocks!\n");\nvar text = File.ReadAllText(path);\nConsole.WriteLine(text);`,
+        },
+      ],
+      project: {
+        title: "Mini‑Project: Grade Analyzer",
+        brief: `Read a CSV file of student grades and compute averages using LINQ.",
+        code: `using System; using System.Linq; using System.IO;\nvar lines = File.ReadAllLines("grades.csv");\nvar scores = lines.Skip(1).Select(l => int.Parse(l.Split(',')[1]));\nConsole.WriteLine($"Avg: {scores.Average():F1}");`,
+      },
+    },
+    {
+      id: "advanced",
+      title: "Generics, Exceptions, Async, and More",
+      lessons: [
+        {
+          id: "generics",
+          title: "Generics",
+          body: `Generics enable type-safe reuse.`,
+          code: `class Box<T> { public T? Value {get;set;} }\nvar b = new Box<string>{ Value = "hi" };\nConsole.WriteLine(b.Value);`,
+        },
+        {
+          id: "exceptions",
+          title: "Exceptions",
+          body: `Throw, catch, and create custom exceptions. Always throw the most specific type.`,
+          code: `try { throw new InvalidOperationException("Oops"); }\ncatch(InvalidOperationException ex) { Console.WriteLine(ex.Message); }\nfinally { Console.WriteLine("done"); }`,
+        },
+        {
+          id: "async",
+          title: "Async/Await & Tasks",
+          body: `Use \`Task\`, \`async\`, and \`await\` for asynchronous operations. Avoid blocking calls (like \`.Result\`) on async code.`,
+          code: `using System.Net.Http;\nusing var http = new HttpClient();\nvar html = await http.GetStringAsync("https://example.com");\nConsole.WriteLine(html.Length);`,
+        },
+        {
+          id: "delegates",
+          title: "Delegates & Events",
+          body: `Delegates are type-safe function pointers; events are based on delegates.`,
+          code: `public delegate void Notifier(string msg);\nclass Alarm { public event Notifier? OnRing; public void Ring()=>OnRing?.Invoke("Wake up!"); }\nvar a=new Alarm(); a.OnRing += Console.WriteLine; a.Ring();`,
+        },
+        {
+          id: "records",
+          title: "Records & Immutability",
+          body: `Records are reference types with value-like equality—great for immutable models.",
+          code: `public record User(string Name, int Age);\nvar u1 = new User("Ava", 12);\nvar u2 = u1 with { Age = 13 };\nConsole.WriteLine(u1 == u2); // False`,
+        },
+      ],
+      project: {
+        title: "Mini‑Project: Async Downloader",
+        brief: `Given a list of URLs, download them concurrently and save their sizes.",
+        code: `using System; using System.Net.Http; using System.Threading.Tasks;\nvar urls = new[]{"https://example.com","https://www.wikipedia.org"};\nusing var http = new HttpClient();\nvar tasks = urls.Select(async u => (u, (await http.GetByteArrayAsync(u)).Length));\nvar results = await Task.WhenAll(tasks);\nforeach (var r in results) Console.WriteLine($"{r.u} -> {r.Length} bytes");`,
+      },
+    },
+    {
+      id: "tooling",
+      title: ".NET CLI, Testing, and Next Steps",
+      lessons: [
+        {
+          id: "dotnet-cli",
+          title: ".NET CLI Essentials",
+          body: `Key commands: \n\n- \`dotnet new console\`\n- \`dotnet run\`\n- \`dotnet add package <Name>\`\n- \`dotnet build\`\n- \`dotnet test\``,
+          code: `# Create solution + projects\ndotnet new sln -n BrainyBytes\ndotnet new console -n App\ndotnet new xunit -n Tests\ndotnet sln add App/App.csproj Tests/Tests.csproj`,
+        },
+        {
+          id: "testing",
+          title: "Unit Testing with xUnit",
+          body: `Testing improves quality and confidence.",
+          code: `// App/Calculator.cs\npublic static class Calculator { public static int Add(int a,int b)=>a+b; }\n\n// Tests/CalcTests.cs\nusing Xunit;\npublic class CalcTests {\n  [Fact] public void Add_Works() { Assert.Equal(5, Calculator.Add(2,3)); }\n}`,
+        },
+        {
+          id: "publish",
+          title: "Publish & What Next",
+          body: `Publish self-contained apps with \`dotnet publish\`. Next, explore ASP.NET for web APIs, Unity for games, and MAUI for mobile." ,
+        },
+      ],
+    },
+  ],
+};
+
+// ------------------------------
+// UI Helpers
+// ------------------------------
+function CodeBlock({ code, language = "" }) {
+  return (
+    <pre className="mt-3 w-full overflow-auto rounded-xl bg-zinc-900 p-4 text-sm text-zinc-100"><code>{code}</code></pre>
+  );
+}
+
+function LessonCard({ lesson, onComplete, completed }) {
+  const [answer, setAnswer] = useState(null);
+  const hasQuiz = !!lesson.quiz;
+  const correct = hasQuiz && answer === lesson.quiz.answerIndex;
+
+  return (
+    <div className="rounded-2xl border bg-white/70 p-5 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">
+      <h3 className="text-xl font-semibold">{lesson.title}</h3>
+      <div className="prose prose-zinc max-w-none dark:prose-invert">
+        {lesson.body?.split("\n\n").map((p, i) => (
+          <p key={i}>{p}</p>
+        ))}
+      </div>
+      {lesson.code && <CodeBlock code={lesson.code} />}
+
+      {hasQuiz && (
+        <div className="mt-4 rounded-xl border p-4 dark:border-zinc-800">
+          <p className="mb-2 font-medium">Quiz: {lesson.quiz.question}</p>
+          <div className="space-y-2">
+            {lesson.quiz.choices.map((c, i) => (
+              <button
+                key={i}
+                onClick={() => setAnswer(i)}
+                className={`w-full rounded-xl border px-3 py-2 text-left hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800 ${
+                  answer === i ? "ring-2 ring-indigo-500" : ""
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          {answer !== null && (
+            <div className={`mt-3 rounded-xl p-3 ${correct ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"}`}>
+              {correct ? "✅ Correct! " : "❌ Not quite. "}
+              <span className="opacity-90">{lesson.quiz.explanation}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4 flex gap-3">
+        <button
+          onClick={onComplete}
+          className={`rounded-xl bg-indigo-600 px-4 py-2 font-medium text-white shadow hover:bg-indigo-700 ${
+            completed ? "opacity-60" : ""
+          }`}
+        >
+          {completed ? "Completed" : "Mark complete"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function useProgress(modules) {
+  const [done, setDone] = useState(() => new Set());
+  const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0);
+  const completed = done.size;
+  const percent = Math.round((completed / totalLessons) * 100);
+
+  function toggle(lessonId) {
+    setDone((prev) => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) next.delete(lessonId);
+      else next.add(lessonId);
+      return next;
+    });
+  }
+
+  return { done, toggle, completed, totalLessons, percent };
+}
+
+function Search({ modules, onClose }) {
+  const [q, setQ] = useState("");
+  const items = useMemo(() => {
+    if (!q.trim()) return [];
+    const t = q.toLowerCase();
+    return modules.flatMap((m) =>
+      m.lessons
+        .filter((l) =>
+          [l.title, l.body, l.code].filter(Boolean).some((x) => x.toLowerCase().includes(t))
+        )
+        .map((l) => ({ module: m, lesson: l }))
+    );
+  }, [q, modules]);
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-start bg-black/40 p-6">
+      <div className="mx-auto w-full max-w-3xl rounded-2xl bg-white p-4 shadow-xl dark:bg-zinc-900">
+        <div className="flex items-center justify-between gap-3">
+          <input
+            autoFocus
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search lessons, code, or text..."
+            className="w-full rounded-xl border px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500 dark:border-zinc-800 dark:bg-zinc-950"
+          />
+          <button onClick={onClose} className="rounded-xl border px-3 py-2 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800">Close</button>
+        </div>
+        <div className="mt-4 max-h-[60vh] overflow-auto divide-y dark:divide-zinc-800">
+          {items.length === 0 ? (
+            <p className="p-3 text-zinc-500">Type to search…</p>
+          ) : (
+            items.map(({ module, lesson }, i) => (
+              <div key={i} className="p-3">
+                <p className="text-sm uppercase tracking-wide text-zinc-500">{module.title}</p>
+                <p className="font-medium">{lesson.title}</p>
+                {lesson.body && <p className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{lesson.body}</p>}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function BrainyBytesCS() {
+  const [activeModuleId, setActiveModuleId] = useState(course.modules[0].id);
+  const [showSearch, setShowSearch] = useState(false);
+  const mod = course.modules.find((m) => m.id === activeModuleId) ?? course.modules[0];
+  const { done, toggle, completed, totalLessons, percent } = useProgress(course.modules);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900 dark:from-zinc-950 dark:to-zinc-900 dark:text-zinc-100">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/70">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-600 text-white shadow">BB</div>
+            <div>
+              <h1 className="text-lg font-bold">{course.title}</h1>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">{course.tagline}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-2 rounded-xl border px-3 py-2 text-sm dark:border-zinc-800 md:flex">
+              <span className="font-medium">Progress:</span>
+              <span>{completed}/{totalLessons}</span>
+              <div className="h-2 w-32 overflow-hidden rounded bg-zinc-200 dark:bg-zinc-800">
+                <div className="h-full bg-indigo-600" style={{ width: `${percent}%` }} />
+              </div>
+              <span className="tabular-nums">{percent}%</span>
+            </div>
+            <button onClick={() => setShowSearch(true)} className="rounded-xl border px-3 py-2 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-800">Search</button>
+            <a
+              href="https://learn.microsoft.com/dotnet/csharp/"
+              target="_blank"
+              className="rounded-xl bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow hover:bg-black dark:bg-white dark:text-black"
+              rel="noreferrer"
+            >
+              Official Docs
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-6 md:grid-cols-[280px,1fr]">
+        {/* Sidebar */}
+        <aside className="space-y-4 self-start rounded-2xl border p-4 dark:border-zinc-800">
+          {course.modules.map((m) => (
+            <div key={m.id}>
+              <button
+                onClick={() => setActiveModuleId(m.id)}
+                className={`w-full rounded-xl px-3 py-2 text-left font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 ${
+                  activeModuleId === m.id ? "bg-zinc-100 dark:bg-zinc-800" : ""
+                }`}
+              >
+                {m.title}
+              </button>
+              <ul className="mt-2 space-y-1 pl-2">
+                {m.lessons.map((l) => (
+                  <li key={l.id} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="rounded"
+                      checked={done.has(l.id)}
+                      onChange={() => toggle(l.id)}
+                    />
+                    <span>{l.title}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </aside>
+
+        {/* Content */}
+        <section className="space-y-6">
+          <div className="rounded-2xl bg-white p-5 shadow-sm dark:bg-zinc-900">
+            <h2 className="mb-1 text-2xl font-bold">{mod.title}</h2>
+            <p className="text-zinc-600 dark:text-zinc-400">Lessons and project</p>
+          </div>
+
+          {mod.lessons.map((lesson) => (
+            <LessonCard
+              key={lesson.id}
+              lesson={lesson}
+              onComplete={() => toggle(lesson.id)}
+              completed={done.has(lesson.id)}
+            />
+          ))}
+
+          {mod.project && (
+            <div className="rounded-2xl border bg-white/70 p-5 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/60">
+              <h3 className="text-xl font-semibold">{mod.project.title}</h3>
+              <p className="mt-1 text-zinc-600 dark:text-zinc-400">{mod.project.brief}</p>
+              <CodeBlock code={mod.project.code} />
+              <div className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+                Tip: Create a folder for each mini‑project. Use <code>dotnet new console</code> to scaffold.
+              </div>
+            </div>
+          )}
+        </section>
+      </main>
+
+      <footer className="border-t py-6 text-center text-sm text-zinc-500 dark:border-zinc-800">
+        Brainy Bytes C# Course • v{course.version} • Licensed MIT • © {new Date().getFullYear()}
+      </footer>
+
+      {showSearch && <Search modules={course.modules} onClose={() => setShowSearch(false)} />}
+    </div>
+  );
+}
